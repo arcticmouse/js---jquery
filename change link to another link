@@ -1,0 +1,8 @@
+<script type="text/javascript">
+$(document).ready(function() {  
+	$('a[href*="web.unthsc.edu/news/article/134/save_the_date_2014_north_texas_health_forum"]').each(function() {
+  $(this).attr('href', $(this).attr('href').replace('web.unthsc.edu/news/article/134/save_the_date_2014_north_texas_health_forum', 'e2.ma/message/n9cpc/vzyhc'));
+});
+
+});
+</script>
