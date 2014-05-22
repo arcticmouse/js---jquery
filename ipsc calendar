@@ -1,0 +1,51 @@
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script type="text/javascript"> 
+var events, oldMonth;
+var eventList = [];
+var monthNames = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
+
+var url = window.location.href;
+
+$.when(
+	$.getJSON("https://spreadsheets.google.com/feeds/list/0AkvL89dhEZQZdE5GWE53SGJ4R0pPdVFYT2ZpTzhDVFE/od6/public/values?alt=json-in-script&callback=?",
+		function(data) {
+			events = data;
+			})
+).then(function(){
+	$.each(events.feed.entry, function(i, entry){
+		var Edate = entry.gsx$date.$t;
+		var Etime = entry.gsx$time.$t;
+		var Etitle = entry.gsx$title.$t;
+		var Edesc = entry.gsx$description.$t;
+		eventList.push({
+			'date':Edate,
+			'time':Etime,
+			'title':Etitle,
+			'desc':Edesc
+			}) //push events
+		}); //end each
+		
+	
+	eventList.sort(function(a, b) {
+		var c = new Date(a.date);
+		var d = new Date(b.date);
+		return c-d;
+		});
+		
+	$.each(eventList, function(x, event) {
+		var y = new Date(event.date);
+		var month = monthNames[y.getMonth()];
+		
+		if (month != oldMonth) {
+			$('div#calendar').append('</ul><ul><lh>' + month + '</lh>');
+			}
+			
+		$('div#calendar').append('<li>' + event.date + ' ' + event.time + ' ' + event.title + ' ' + event.desc + '</li>');
+		oldMonth = month;
+		});
+	
+	}); //end then
+</script>
+				
+					
+		
