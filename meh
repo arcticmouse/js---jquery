@@ -1,0 +1,245 @@
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script type="text/javascript"> 
+
+var specData, docData, specDocData, locData, docLocData;
+var specList = [];
+var docList = [];
+var specDocList = [];
+var locList = [];
+
+var url = window.location.href;
+
+$.when(
+	//specialties
+	$.getJSON( "https://spreadsheets.google.com/feeds/list/1ciz-IYKxuAaJIEaez7qJa1yNFuzQgbe3xfBaBGAyYc8/od6/public/values?alt=json-in-script&callback=?",
+		function (data) {
+			specData = data;
+			}),
+	//from personal details
+	$.getJSON( "https://spreadsheets.google.com/feeds/list/1M7aCV3J0NrUUEPXXHn6YYUaZ0iOFeLkWvzdyHmGyq4k/od6/public/values?alt=json-in-script&callback=?",
+		function (data) {	
+			docData = data;
+			}),
+	//from int_phys_spec
+	$.getJSON( "https://spreadsheets.google.com/feeds/list/14RFfEz7geje9eXji-_1pnEb8UQbCJ0WYg-xOgQYdV4g/od6/public/values?alt=json-in-script&callback=?",
+		function (data) {	
+			specDocData = data;
+			}),
+	//from locations
+	$.getJSON( "https://spreadsheets.google.com/feeds/list/1Kthery3NqcTo-6I0k4wRrVdZBWW2ceUZfq--M1trwVs/od6/public/values?alt=json-in-script&callback=?",
+		function (data) {	
+			locData = data;
+			}),	
+	//from int_phys_loc
+	$.getJSON( "https://spreadsheets.google.com/feeds/list/1ZbfSx1Of7YLRkSLWqwCVEs2WR3AYxJNrKdDX-OP9byk/od6/public/values?alt=json-in-script&callback=?",
+		function (data) {	
+			docLocData = data;
+			})
+).then(function(){
+	// put data into specList and fill out specDir
+	$('div#specDir').append('<select>'); //<ul>');
+
+	$.each(specData.feed.entry, function(i, entry) {
+		var specid = entry.gsx$specid.$t;
+		var specname = entry.gsx$specname.$t;
+		specList.push({
+			'id':specid,
+			'name':specname
+			}) //push specList
+		// print out specialty directory
+		$('div#specDir select').append('<option value="' + specid + '">' + specname + '</option>');
+		}); //end each specData
+	$('div#specDir').append('</select>'); //</ul><br />');
+		
+	// put data into docList
+	$.each(docData.feed.entry, function(i, entry) {
+		var docid = entry.gsx$physid.$t;
+		var doclname = entry.gsx$lastname.$t;
+		var docfname = entry.gsx$firstname.$t;
+		var docdegree = entry.gsx$degree.$t;
+		var docLocName, docLocAddress, docLocPhone;
+		$.each(docLocData.feed.entry, function(dl, docLoc) {
+			if (docid == docLoc.gsx$physid.$t) {
+				$.each(locData.feed.entry, function(l, loc) {
+					if (docLoc.gsx$locationid.$t == loc.gsx$locid.$t) {
+						docLocName = loc.gsx$name.$t;
+						docLocAddress = loc.gsx$address.$t;
+						docLocCity = loc.gsx$city.$t;
+						docLocZip = loc.gsx$zipcode.$t;
+						docLocPhone = loc.gsx$phone.$t;
+						} //end if
+					}); //end each locData
+				}// end if
+			}); //end each doclocdata	
+		docList.push({
+			'id':docid,
+			'lname':doclname,
+			'fname':docfname,
+			'degree':docdegree,
+			'location':docLocName,
+			'address':docLocAddress,
+			'city':docLocCity,
+			'zip':docLocZip,
+			'phone':docLocPhone
+			}) //push docList
+		}); //end each docData
+
+	// put data into specDocList
+	$.each(specDocData.feed.entry, function(i, entry) {
+		var sddocid = entry.gsx$physid.$t;
+		var sdspecid = entry.gsx$specid.$t;
+		specDocList.push({
+			'docid':sddocid,
+			'specid':sdspecid
+			}); //push specDocList
+		}); //end each specDocData
+		
+		
+	
+	// load & view specialties with a click
+	//$('#specDir option').on('click', function() {		
+	$('#specDir select').change(function() {
+		$('#specListing').empty();
+		// get specialty id
+		//var addressValue = $(this).attr("href").substr($(this).attr("href").indexOf("#") + 1);
+		var addressValue = $(this).val();
+		
+		// fill out specListing
+		var count = 0;
+		$('div#specListing').append('<ul id="' + addressValue + '">');
+		$.each(specDocList, function(i, specDoc) {
+			if (specDoc.specid == addressValue) {
+				$.each(docList, function(i, doc) {
+					if (specDoc.docid == doc.id) {
+						count += 1;
+						$('div#specListing').append('<li class="detailedListing">' + doc.fname + ' ' + doc.lname + ',' + doc.degree + '<br /><b>Office: </b>' + doc.location + '<br />' + doc.address + '<br />' + doc.city + ' TX ' + doc.zip + '<br />' + doc.phone + '<br /></li>');
+					} //end if
+				}); //end each docList	
+			} //end if
+		}); //end each specDocList		
+		if (count == 0) { 
+			$('div#specListing').append('<li class="detailedListing">Sorry, there are no physicians listed in this category</li>');
+			}//end if			
+		}); //end on click
+		
+
+
+	// alphabetize docList
+	docList.sort(function (a, b) {
+		if (a.lname > b.lname)
+			return 1;
+		if (a.lname < b.lname)
+			return -1;
+		return 0;
+		}); //	end sort	
+	
+	// load & view names	
+	var before;
+	$.each(docList, function(p, val) {
+		init = val.lname.charAt(0);
+		if (init == before) {
+			$('ul#' + init).append('<li>' + val.lname + ', ' + val.fname + ', ' + val.degree + '<br /><span class="detailedListing nameDetail">' + val.fname + ' ' + val.lname + ', ' + val.degree + '<br /><b>Office: </b>' + val.location + '<br />' + val.address + ' | ' + val.phone + '<br /></span></li>');
+			}
+			else {
+				$('div#namesDir').append('<a href="' + $(location).attr('href') + '#' + init + '">' + init + '</a>   ');
+				$('div#namesList').append('<span class="backTop"><a href="/info/200877/patient_care/3037/find_a_physician#top">-back to top-</a></span>');	
+				$('div#namesList').append('<ul id="' + init + '">');					
+				$('ul#' + init).append('<li>' + val.lname + ', ' + val.fname + ', ' + val.degree + '<br /><span class="detailedListing nameDetail">' + val.fname + ' ' + val.lname + ', ' + val.degree + '<br /><b>Office: </b>' + val.location + '<br />' + val.address + ' | ' + val.phone + '<br /></span></li>');
+				} //end else
+		before = init;
+		}); //end each
+
+	// view docNames list doc info on click one doc at a time
+	$('#namesList li').on('click', function() {
+		$('.nameDetail').css('display', 'none');
+		$(this).find('.nameDetail').css('display', 'inline');
+		});
+		
+
+}); //end then 
+
+</script>
+
+<style>
+#specDir {
+	overflow: auto;
+}
+#specDir li {
+    float: left;
+    width: 33%;
+}
+#specDir li a {
+    color: #155878;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+}
+#specListing {
+    border-radius: 5px;
+    margin: 2em 0;
+    overflow: auto;
+    padding: 1em;
+}
+#specListing ul {
+    margin: 0;
+}
+#names {
+	margin-top: 5em;
+}
+#namesDir {
+    text-align: center;
+}
+#namesDir a {
+    padding: .75em 0.5em;
+    text-decoration: none;
+    font-weight: bold;
+    color: #155878;
+    background: #cccccc;
+}
+#namesList {
+    width: 100%;
+    margin: 2em 0;
+}
+#namesList ul {
+    margin: 0.5em 0 0 0;
+    list-style: none;
+    width: 50%;
+}
+#namesList li {
+	overflow: auto;
+	cursor: pointer;
+}
+.detailedListing {
+    border: 1px solid #CCCCCC;
+    border-radius: 5px;
+    float: left;
+    height: 10em;
+    list-style: none outside none;
+    margin: 1em;
+    padding: 1em;
+    text-align: center;
+    width: 14em;
+}
+.nameDetail {
+	display:none;
+}
+.backTop {
+    margin-left: 25%;
+}
+#namesList>ul:first-child, #namesList>.backTop:nth-child(2) {
+    display: none;
+}
+.listed_item {
+    display: none;
+}
+</style>
+
+<div id="specialties">
+<div id="specDir"></div>
+<div id="specListing"><ul></div>
+</div>
+
+<div id="names">
+<div id="namesDir"></div>
+<div id="namesList"><ul></div>
+</div>
