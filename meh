@@ -57,6 +57,7 @@ $.when(
 		var doclname = entry.gsx$lastname.$t;
 		var docfname = entry.gsx$firstname.$t;
 		var docdegree = entry.gsx$degree.$t;
+		var docPhone = entry.gsx$phone.$t;
 		var docLocName, docLocAddress, docLocPhone;
 		$.each(docLocData.feed.entry, function(dl, docLoc) {
 			if (docid == docLoc.gsx$physid.$t) {
@@ -80,7 +81,8 @@ $.when(
 			'address':docLocAddress,
 			'city':docLocCity,
 			'zip':docLocZip,
-			'phone':docLocPhone
+			'phone':docPhone,
+			'lphone':docLocPhone
 			}) //push docList
 		}); //end each docData
 
@@ -112,7 +114,7 @@ $.when(
 				$.each(docList, function(i, doc) {
 					if (specDoc.docid == doc.id) {
 						count += 1;
-						$('div#specListing').append('<li class="detailedListing">' + doc.fname + ' ' + doc.lname + ',' + doc.degree + '<br /><b>Office: </b>' + doc.location + '<br />' + doc.address + '<br />' + doc.city + ' TX ' + doc.zip + '<br />' + doc.phone + '<br /></li>');
+						$('div#specListing').append('<li class="detailedListing">' + doc.fname + ' ' + doc.lname + ',' + doc.degree + '<br /><b>Office: </b>' + doc.location + '<br />' + doc.address + '<br />' + doc.city + ' TX ' + doc.zip + '<br />Primary Phone:' +  doc.phone + '<br />' + doc.lphone + '</li>');
 					} //end if
 				}); //end each docList	
 			} //end if
