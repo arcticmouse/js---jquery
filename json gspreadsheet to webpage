@@ -114,7 +114,7 @@ $.when(
 				$.each(docList, function(i, doc) {
 					if (specDoc.docid == doc.id) {
 						count += 1;
-						$('div#specListing').append('<li class="detailedListing">' + doc.fname + ' ' + doc.lname + ',' + doc.degree + '<br /><b>Office: </b>' + doc.location + '<br />' + doc.address + '<br />' + doc.city + ' TX ' + doc.zip + '<br />Primary Phone:' +  doc.phone + '<br />' + doc.lphone + '</li>');
+						$('div#specListing').append('<li class="detailedListing">' + doc.fname + ' ' + doc.lname + ',' + doc.degree + '<br /><b>Office: </b>' + doc.location + '<br />' + doc.address + '<br />' + doc.city + ' TX ' + doc.zip + '<br />Primary Phone:' +  doc.phone + '</li>');
 					} //end if
 				}); //end each docList	
 			} //end if
@@ -136,19 +136,23 @@ $.when(
 		}); //	end sort	
 	
 	// load & view names	
-	var before;
+	var before, before_first, before_last;
 	$.each(docList, function(p, val) {
-		init = val.lname.charAt(0);
-		if (init == before) {
-			$('ul#' + init).append('<li>' + val.lname + ', ' + val.fname + ', ' + val.degree + '<br /><span class="detailedListing nameDetail">' + val.fname + ' ' + val.lname + ', ' + val.degree + '<br /><b>Office: </b>' + val.location + '<br />' + val.address + ' | ' + val.phone + '<br /></span></li>');
-			}
-			else {
-				$('div#namesDir').append('<a href="' + $(location).attr('href') + '#' + init + '">' + init + '</a>   ');
-				$('div#namesList').append('<span class="backTop"><a href="/info/200877/patient_care/3037/find_a_physician#top">-back to top-</a></span>');	
-				$('div#namesList').append('<ul id="' + init + '">');					
-				$('ul#' + init).append('<li>' + val.lname + ', ' + val.fname + ', ' + val.degree + '<br /><span class="detailedListing nameDetail">' + val.fname + ' ' + val.lname + ', ' + val.degree + '<br /><b>Office: </b>' + val.location + '<br />' + val.address + ' | ' + val.phone + '<br /></span></li>');
-				} //end else
-		before = init;
+		if ( (val.lname != before_last) && (val.fname != before_first) ){
+				init = val.lname.charAt(0);
+				if (init == before) {
+					$('ul#' + init).append('<li>' + val.lname + ', ' + val.fname + ', ' + val.degree + '<br /><span class="detailedListing nameDetail">' + val.fname + ' ' + val.lname + ', ' + val.degree + '<br /><b>Office: </b>' + val.location + '<br />' + val.address + ' | ' + val.phone + '<br /></span></li>');
+					}
+					else {
+						$('div#namesDir').append('<a href="' + $(location).attr('href') + '#' + init + '">' + init + '</a>   ');
+						$('div#namesList').append('<span class="backTop"><a href="/info/200877/patient_care/3037/find_a_physician#top">-back to top-</a></span>');	
+						$('div#namesList').append('<ul id="' + init + '">');					
+						$('ul#' + init).append('<li>' + val.lname + ', ' + val.fname + ', ' + val.degree + '<br /><span class="detailedListing nameDetail">' + val.fname + ' ' + val.lname + ', ' + val.degree + '<br /><b>Office: </b>' + val.location + '<br />' + val.address + ' | ' + val.phone + '<br /></span></li>');
+						} //end else
+				before = init;
+		} //end no repeating of names check
+		before_first = val.fname;
+		before_last = val.lname;
 		}); //end each
 
 	// view docNames list doc info on click one doc at a time
